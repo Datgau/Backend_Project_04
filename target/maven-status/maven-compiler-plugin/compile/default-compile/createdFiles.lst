@@ -1,0 +1,11 @@
+com\example\project_backend04\service\EmailService.class
+com\example\project_backend04\controller\AuthController.class
+com\example\project_backend04\security\JwtService.class
+com\example\project_backend04\service\IService\IAuthService.class
+com\example\project_backend04\config\SecurityConfig.class
+com\example\project_backend04\entity\User.class
+com\example\project_backend04\config\CustomCorsFilter.class
+com\example\project_backend04\service\AuthService.class
+com\example\project_backend04\repository\IRepository\IAuthRepository.class
+com\example\project_backend04\ProjectBackend04Application.class
+com\example\project_backend04\entity\Role.class

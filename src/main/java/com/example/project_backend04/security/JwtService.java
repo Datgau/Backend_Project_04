@@ -94,9 +94,9 @@ public class JwtService {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)                         // Không đọc được bằng Js
                 .secure(false)                          // true nếu dùng HTTPS
-                .path("/api/auth")                      // Cookie chỉ gửi trong auth API
+                .path("/")                              // Cookie gửi cho tất cả paths
                 .maxAge(refreshableDuration)            // Thời gian sống (seconds)
-                .sameSite("Strict")                     // Chống CSRF
+                .sameSite("Lax")                        // Lax thay vì Strict để tương thích tốt hơn
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
@@ -109,9 +109,9 @@ public class JwtService {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(false)
-                .path("/api/auth")
+                .path("/")
                 .maxAge(0)
-                .sameSite("Strict")
+                .sameSite("Lax")
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());

@@ -22,6 +22,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,85 +44,83 @@ public class AuthService implements IAuthService {
     private final FacebookApiService facebookApiService;
     private final GoogleApiService googleApiService;
 
-        @Transactional
-        @Override
-        public ApiResponse<RegisterResponse> register(RegisterRequest request) throws MessagingException {
-            LocalDateTime now = LocalDateTime.now();
-            if (authRepository.existsByEmail(request.getEmail())) {
-                RegisterResponse data = new RegisterResponse(
-
-                        request.getEmail(),
-                        false,
-                        now
-                );
-                return new ApiResponse<>(false, "Email đã tồn tại trong hệ thống", data, 400);
-            }
-            if(authRepository.existsByUsername(request.getUsername()))
-            {
-                RegisterResponse data = new RegisterResponse(
-                        request.getUsername(),
-                        false,
-                        now
-                );
-                return new ApiResponse<>(false, "User name đã tồn tại trong hệ thống",data,400);
-            }
-            Optional<PendingUser> pendingOptional = pendingUserRepository.findByEmail(request.getEmail());
-
-            if (pendingOptional.isPresent()) {
-                PendingUser existingPending = pendingOptional.get();
-                if (existingPending.getOtpExpiry().isAfter(now)) {
-                    long secondsLeft = java.time.Duration.between(now, existingPending.getOtpExpiry()).getSeconds();
-                    RegisterResponse data = new RegisterResponse(
-                            request.getEmail(),
-                            false,
-                            now
-                    );
-                    return new ApiResponse<>(false, "Email đã đăng ký, vui lòng thử lại sau " + secondsLeft + " giây", data, 400);
-                } else {
-                    pendingUserRepository.delete(existingPending);
-                }
-            }
-
-            PendingUser pendingUser = new PendingUser();
-            pendingUser.setUsername(request.getUsername());
-            pendingUser.setEmail(request.getEmail());
-            pendingUser.setPassword(passwordEncoder.encode(request.getPassword()));
-
-            String otp = generateOtp();
-            pendingUser.setOtp(otp);
-            pendingUser.setOtpExpiry(now.plusMinutes(5));
-
-            pendingUserRepository.save(pendingUser);
-            emailService.sendOtpEmail(request.getEmail(), otp);
-
+    @Transactional
+    @Override
+    public ApiResponse<RegisterResponse> register(RegisterRequest request) throws MessagingException {
+        LocalDateTime now = LocalDateTime.now();
+        if (authRepository.existsByEmail(request.getEmail())) {
             RegisterResponse data = new RegisterResponse(
+
                     request.getEmail(),
                     false,
                     now
             );
+            return new ApiResponse<>(false, "Email đã tồn tại trong hệ thống", data, 400);
+        }
+        if (authRepository.existsByUsername(request.getUsername())) {
+            RegisterResponse data = new RegisterResponse(
+                    request.getUsername(),
+                    false,
+                    now
+            );
+            return new ApiResponse<>(false, "User name đã tồn tại trong hệ thống", data, 400);
+        }
+        Optional<PendingUser> pendingOptional = pendingUserRepository.findByEmail(request.getEmail());
 
-            return new ApiResponse<>(true, "Đăng ký thành công, OTP đã được gửi tới email của bạn để xác minh tài khoản", data, 200);
+        if (pendingOptional.isPresent()) {
+            PendingUser existingPending = pendingOptional.get();
+            if (existingPending.getOtpExpiry().isAfter(now)) {
+                long secondsLeft = java.time.Duration.between(now, existingPending.getOtpExpiry()).getSeconds();
+                RegisterResponse data = new RegisterResponse(
+                        request.getEmail(),
+                        false,
+                        now
+                );
+                return new ApiResponse<>(false, "Email đã đăng ký, vui lòng thử lại sau " + secondsLeft + " giây", data, 400);
+            } else {
+                pendingUserRepository.delete(existingPending);
+            }
         }
 
-        @Transactional
-        @Override
-        public ApiResponse<Void> verifyOtp(String email, String otp) {
+        PendingUser pendingUser = new PendingUser();
+        pendingUser.setUsername(request.getUsername());
+        pendingUser.setEmail(request.getEmail());
+        pendingUser.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        String otp = generateOtp();
+        pendingUser.setOtp(otp);
+        pendingUser.setOtpExpiry(now.plusMinutes(5));
+
+        pendingUserRepository.save(pendingUser);
+        emailService.sendOtpEmail(request.getEmail(), otp);
+
+        RegisterResponse data = new RegisterResponse(
+                request.getEmail(),
+                false,
+                now
+        );
+
+        return new ApiResponse<>(true, "Đăng ký thành công, OTP đã được gửi tới email của bạn để xác minh tài khoản", data, 200);
+    }
+
+    @Transactional
+    @Override
+    public ApiResponse<Void> verifyOtp(String email, String otp) {
         Optional<PendingUser> optionalPending = pendingUserRepository.findByEmail(email);
-        if(optionalPending.isEmpty()) {
+        if (optionalPending.isEmpty()) {
             return new ApiResponse<>(false, "Email không tồn tại hoặc chưa đăng ký", null, 404);
         }
 
         PendingUser pendingUser = optionalPending.get();
 
-        if(pendingUser.getOtpExpiry().isBefore(LocalDateTime.now())) {
+        if (pendingUser.getOtpExpiry().isBefore(LocalDateTime.now())) {
             pendingUserRepository.delete(pendingUser);
             return new ApiResponse<>(false, "OTP đã hết hạn", null, 400);
         }
 
-        if(!pendingUser.getOtp().equals(otp)) {
+        if (!pendingUser.getOtp().equals(otp)) {
             return new ApiResponse<>(false, "OTP không đúng", null, 400);
         }
-
 
 
         User user = new User();
@@ -147,94 +146,95 @@ public class AuthService implements IAuthService {
     }
 
 
-        @Transactional
-        @Override
-        public ApiResponse<LoginResponse> login(LoginRequest request, HttpServletResponse response) {
+    @Transactional
+    @Override
+    public ApiResponse<LoginResponse> login(LoginRequest request, HttpServletResponse response) {
 
-            try {
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                request.getUsername(),
-                                request.getPassword()
-                        )
-                );
-            } catch (BadCredentialsException e) {
-                return new ApiResponse<>(false, "Sai tài khoản hoặc mật khẩu", null, 401);
-            }
-
-            User user = authRepository.findByUsername(request.getUsername())
-                    .orElseThrow(() -> new RuntimeException("User không tồn tại"));
-
-            String accessToken = jwtService.generateToken(user);
-            String refreshToken = UUID.randomUUID().toString();
-
-            user.setRefreshToken(refreshToken);
-            user.setRefreshTokenExpiryTime(LocalDateTime.now().plusDays(7));
-            authRepository.save(user);
-            jwtService.addRefreshTokenCookie(response, refreshToken);
-
-            JwtResponse jwtResponse = new JwtResponse(
-                    accessToken,
-                    jwtService.getValidDuration()
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsername(),
+                            request.getPassword()
+                    )
             );
-
-            LoginResponse loginResponse = new LoginResponse(
-                    user.getUsername(),
-                    user.getRole().getName(),
-                    jwtResponse
-            );
-
-            return new ApiResponse<>(true, "Đăng nhập thành công", loginResponse, 200);
+        } catch (BadCredentialsException e) {
+            return new ApiResponse<>(false, "Sai tài khoản hoặc mật khẩu", null, 401);
         }
 
+        User user = authRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
-        @Override
-        public ApiResponse<JwtResponse> refreshToken(String refreshToken, HttpServletResponse response) {
+        String accessToken = jwtService.generateToken(user);
+        String refreshToken = UUID.randomUUID().toString();
 
-            User user = authRepository.findByRefreshToken(refreshToken)
-                    .orElseThrow(() -> new RuntimeException("Refresh token không hợp lệ"));
+        user.setRefreshToken(refreshToken);
+        user.setRefreshTokenExpiryTime(LocalDateTime.now().plusDays(7));
+        authRepository.save(user);
+        jwtService.addRefreshTokenCookie(response, refreshToken);
 
-            if (user.getRefreshTokenExpiryTime().isBefore(LocalDateTime.now())) {
-                return new ApiResponse<>(false, "Refresh token đã hết hạn", null, 401);
-            }
+        JwtResponse jwtResponse = new JwtResponse(
+                accessToken,
+                jwtService.getValidDuration()
+        );
 
-            String newAccessToken = jwtService.generateToken(user);
-            String newRefreshToken = UUID.randomUUID().toString();
+        LoginResponse loginResponse = new LoginResponse(
+                user.getUsername(),
+                user.getRole().getName(),
+                jwtResponse
+        );
 
-            user.setRefreshToken(newRefreshToken);
-            user.setRefreshTokenExpiryTime(LocalDateTime.now().plusDays(7));
-            authRepository.save(user);
+        return new ApiResponse<>(true, "Đăng nhập thành công", loginResponse, 200);
+    }
 
-            jwtService.addRefreshTokenCookie(response, newRefreshToken);
 
-            JwtResponse jwtResponse = new JwtResponse(
-                    newAccessToken,
-                    jwtService.getValidDuration()
-            );
+    @Override
+    public ApiResponse<JwtResponse> refreshToken(String refreshToken, HttpServletResponse response) {
 
-            return new ApiResponse<>(true, "Làm mới token thành công", jwtResponse, 200);
+        User user = authRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException("Refresh token không hợp lệ"));
+
+        if (user.getRefreshTokenExpiryTime().isBefore(LocalDateTime.now())) {
+            return new ApiResponse<>(false, "Refresh token đã hết hạn", null, 401);
         }
 
+        String newAccessToken = jwtService.generateToken(user);
+        String newRefreshToken = UUID.randomUUID().toString();
 
-        @Transactional
-        @Override
-        public ApiResponse<Void> logout(String refreshToken) {
-            User user = authRepository.findByRefreshToken(refreshToken)
-                    .orElseThrow(() -> new RuntimeException("Refresh token không hợp lệ"));
+        user.setRefreshToken(newRefreshToken);
+        user.setRefreshTokenExpiryTime(LocalDateTime.now().plusDays(7));
+        authRepository.save(user);
 
-            user.setRefreshToken(null);
-            user.setRefreshTokenExpiryTime(null);
-            authRepository.save(user);
+        jwtService.addRefreshTokenCookie(response, newRefreshToken);
 
-            return new ApiResponse<>(true, "Đăng xuất thành công", null, 200);
-        }
+        JwtResponse jwtResponse = new JwtResponse(
+                newAccessToken,
+                jwtService.getValidDuration()
+        );
 
-        private String generateOtp() {
-            int otp = (int) (Math.random() * 900000) + 100000;
-            return String.valueOf(otp);
-        }
-        @Scheduled(fixedRate = 60000)
-        public void cleanExpiredPendingUsers() {
+        return new ApiResponse<>(true, "Làm mới token thành công", jwtResponse, 200);
+    }
+
+
+    @Transactional
+    @Override
+    public ApiResponse<Void> logout(String refreshToken) {
+        User user = authRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new RuntimeException("Refresh token không hợp lệ"));
+
+        user.setRefreshToken(null);
+        user.setRefreshTokenExpiryTime(null);
+        authRepository.save(user);
+
+        return new ApiResponse<>(true, "Đăng xuất thành công", null, 200);
+    }
+
+    private String generateOtp() {
+        int otp = (int) (Math.random() * 900000) + 100000;
+        return String.valueOf(otp);
+    }
+
+    @Scheduled(fixedRate = 60000)
+    public void cleanExpiredPendingUsers() {
         LocalDateTime now = LocalDateTime.now();
         pendingUserRepository.deleteAllByOtpExpiryBefore(now);
     }
@@ -244,13 +244,17 @@ public class AuthService implements IAuthService {
     @Override
     @Transactional
     public ApiResponse<LoginResponse> oauthLogin(OAuthLoginRequest request, HttpServletResponse response) {
+        System.out.println("=== OAuth Login Request ===");
+        System.out.println("Provider: " + request.getProvider());
+        System.out.println("Token length: " + (request.getAccessToken() != null ? request.getAccessToken().length() : "null"));
 
         User user;
 
-        switch(request.getProvider().toLowerCase()) {
+        switch (request.getProvider().toLowerCase()) {
             case "facebook":
                 FacebookUserData fbUser = facebookApiService.getUserInfo(request.getAccessToken());
                 if (fbUser == null || fbUser.getId() == null) {
+                    System.out.println("Facebook user data is null or invalid");
                     return new ApiResponse<>(false, "AccessToken Facebook không hợp lệ", null, 401);
                 }
                 user = getOrCreateOAuthUser("facebook", fbUser.getId(), fbUser.getEmail(), fbUser.getName(), fbUser.getPictureUrl(), request.getAccessToken());
@@ -258,7 +262,13 @@ public class AuthService implements IAuthService {
 
             case "google":
                 GoogleUserData googleUser = googleApiService.getUserInfo(request.getAccessToken());
+                System.out.println("Google user data: " + (googleUser != null ? "Valid" : "NULL"));
+                if (googleUser != null) {
+                    System.out.println("Google user ID: " + googleUser.getId());
+                    System.out.println("Google user email: " + googleUser.getEmail());
+                }
                 if (googleUser == null || googleUser.getId() == null) {
+                    System.out.println("Google user data is null or invalid");
                     return new ApiResponse<>(false, "AccessToken Google không hợp lệ", null, 401);
                 }
                 user = getOrCreateOAuthUser("google", googleUser.getId(), googleUser.getEmail(), googleUser.getFullName(), googleUser.getAvatar(), request.getAccessToken());
@@ -268,7 +278,6 @@ public class AuthService implements IAuthService {
                 return new ApiResponse<>(false, "Provider không hợp lệ", null, 400);
         }
 
-        // Tạo JWT + refresh token
         String jwtToken = jwtService.generateToken(user);
         String refreshToken = UUID.randomUUID().toString();
 
@@ -294,14 +303,20 @@ public class AuthService implements IAuthService {
 
         if (optionalProvider.isPresent()) {
             return optionalProvider.get().getUser();
+        }
+
+        Optional<User> existingUserByEmail = authRepository.findByEmail(email);
+
+        if (existingUserByEmail.isPresent()) {
+            return existingUserByEmail.get();
         } else {
             User user = new User();
             user.setUsername(provider + "_" + providerUserId);
             user.setEmail(email);
             user.setFullName(fullName);
             user.setAvatar(avatar);
-            user.setPassword(null);
 
+            user.setPassword(new BCryptPasswordEncoder().encode(UUID.randomUUID().toString()));
             Role defaultRole = authRepository.findRoleByName("USER")
                     .orElseThrow(() -> new RuntimeException("Role USER chưa tồn tại"));
             user.setRole(defaultRole);
@@ -317,7 +332,4 @@ public class AuthService implements IAuthService {
             return user;
         }
     }
-
-
-
 }

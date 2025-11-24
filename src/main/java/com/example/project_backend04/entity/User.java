@@ -19,15 +19,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Username không cần unique nếu đăng nhập Facebook
     @Column(unique = true)
     private String username;
 
-    // OAuth user không cần password
     @Column
     private String password;
 
-    // Email Facebook có thể không có, nên cho phép null
     @Column(unique = true)
     private String email;
 
@@ -39,6 +36,12 @@ public class User {
 
     @Column
     private String avatar;
+
+    @Column(columnDefinition = "NVARCHAR(MAX)")
+    private String bio;
+
+    @Column
+    private String coverPhoto;
 
     @Column(length = 512)
     private String refreshToken;
@@ -56,6 +59,26 @@ public class User {
     // Một user có thể liên kết nhiều providers (Facebook, Google,…)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserProvider> providers;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Story> stories;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
+
+    // Người theo dõi tôi
+    @OneToMany(mappedBy = "following", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Follow> followers;
+
+    // Tôi theo dõi ai
+    @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Follow> following;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications;
 
     @PrePersist
     protected void onCreate() {

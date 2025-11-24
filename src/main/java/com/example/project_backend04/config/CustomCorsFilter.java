@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-@Component
+// Temporarily disabled - using Spring Security CORS instead
+// @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CustomCorsFilter implements Filter {
 
@@ -21,7 +22,12 @@ public class CustomCorsFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         
         String origin = request.getHeader("Origin");
-        if (origin != null && (origin.equals("http://localhost:5173") || origin.equals("http://localhost:3000"))) {
+        if (origin != null && (
+            origin.equals("http://localhost:5173") || 
+            origin.equals("http://localhost:3000") ||
+            origin.contains("ngrok") ||
+            origin.contains("ngrok-free.app")
+        )) {
             response.setHeader("Access-Control-Allow-Origin", origin);
         }
         

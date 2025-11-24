@@ -50,13 +50,25 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {})
+                .cors(cors -> cors.configurationSource(request -> {
+                    var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                    // Allow all origins for development
+                    corsConfig.setAllowedOriginPatterns(java.util.Arrays.asList("*"));
+                    corsConfig.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                    corsConfig.setAllowedHeaders(java.util.Arrays.asList("*"));
+                    corsConfig.setAllowCredentials(true);
+                    corsConfig.setExposedHeaders(java.util.Arrays.asList("Set-Cookie", "Authorization"));
+                    corsConfig.setMaxAge(3600L);
+                    return corsConfig;
+                }))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> {
+                    System.out.println("=== Configuring authorization rules ===");
+                    auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated();
+                })
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(e -> e
@@ -70,7 +82,6 @@ public class SecurityConfig {
                                     null,
                                     HttpServletResponse.SC_UNAUTHORIZED
                             );
-
                             new ObjectMapper().writeValue(response.getWriter(), apiResponse);
                         })
 

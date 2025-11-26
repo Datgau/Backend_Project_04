@@ -19,6 +19,6 @@ public class Role {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(columnDefinition = "NVARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     private String description;
 }

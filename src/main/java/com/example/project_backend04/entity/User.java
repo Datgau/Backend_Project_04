@@ -37,7 +37,7 @@ public class User {
     @Column
     private String avatar;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @Column(columnDefinition = "TEXT")
     private String bio;
 
     @Column

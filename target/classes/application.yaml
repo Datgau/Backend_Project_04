@@ -1,18 +1,17 @@
 spring:
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=Project04;encrypt=false;trustServerCertificate=true;characterEncoding=UTF-8
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    username: sa
-    password: DatGau123@
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/heartbeat_db}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.SQLServerDialect
-        jdbc:
-          charset: UTF-8
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
   http:
     encoding:
       charset: UTF-8
@@ -29,7 +28,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: Datbeo1204@gmail.com
-    password: dvap hdyo osrh lfqa
+    password: "dvap hdyo osrh lfqa"
     properties:
       mail:
         smtp:
@@ -40,8 +39,9 @@ spring:
 
 jwt:
   signerKey: "1TjXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
-  valid-duration: 3600        # seconds
-  refreshable-duration: 36000 # seconds
+  valid-duration: 3600
+  refreshable-duration: 36000
+
 google:
   cloud:
     bucket-name: cloudstorage-04

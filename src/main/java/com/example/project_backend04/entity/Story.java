@@ -25,7 +25,7 @@ public class Story {
     @Column(nullable = false)
     private String imageUrl;
 
-    @Column(columnDefinition = "NVARCHAR(500)")
+    @Column(columnDefinition = "VARCHAR(500)")
     private String caption;
 
     @Column(nullable = false)

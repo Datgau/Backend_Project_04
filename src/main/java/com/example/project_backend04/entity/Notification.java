@@ -33,7 +33,7 @@ public class Notification {
     @Enumerated(EnumType.STRING)
     private NotificationType type;
 
-    @Column(columnDefinition = "NVARCHAR(500)")
+    @Column(columnDefinition = "VARCHAR(500)")
     private String content;
 
     // ID của đối tượng liên quan (post_id, comment_id...)

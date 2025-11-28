@@ -27,6 +27,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final CustomUserDetailsService customUserDetailsService;
+    
+    @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
+    private String allowedOrigins;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -52,8 +55,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                    // Allow all origins for development
-                    corsConfig.setAllowedOriginPatterns(java.util.Arrays.asList("*"));
+                    // Parse allowed origins from environment variable
+                    java.util.List<String> origins = java.util.Arrays.asList(allowedOrigins.split(","));
+                    corsConfig.setAllowedOrigins(origins);
                     corsConfig.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                     corsConfig.setAllowedHeaders(java.util.Arrays.asList("*"));
                     corsConfig.setAllowCredentials(true);

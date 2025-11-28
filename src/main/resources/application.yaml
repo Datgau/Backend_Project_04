@@ -44,5 +44,7 @@ jwt:
 
 google:
   cloud:
-    bucket-name: ${GOOGLE_BUCKET_NAME}
-    credential-path: ${GOOGLE_CREDENTIAL_PATH}
+    enabled: ${GOOGLE_CLOUD_ENABLED:true}
+    bucket-name: ${GOOGLE_BUCKET_NAME:cloudstorage-04}
+    credential-path: ${GOOGLE_CREDENTIAL_PATH:./gg_cloud_storage4.json}
+    credentials-json: ${GOOGLE_CREDENTIALS_JSON:}

@@ -19,20 +19,46 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "google.cloud.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class GoogleCloudStorageService implements IGoogleCloudStorageService {
 
     @Value("${google.cloud.bucket-name}")
     private String bucketName;
 
-    @Value("${google.cloud.credential-path}")
+    @Value("${google.cloud.credential-path:}")
     private String credentialPath;
+
+    @Value("${google.cloud.credentials-json:}")
+    private String credentialsJson;
 
     private Storage storage;
 
     @PostConstruct
     private void init() throws IOException {
-        String absPath = Paths.get(credentialPath).toAbsolutePath().toString();
-        GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(absPath));
+        GoogleCredentials credentials;
+        
+        // Ưu tiên dùng JSON string từ environment variable (cho Render/Cloud)
+        if (credentialsJson != null && !credentialsJson.isBlank()) {
+            credentials = GoogleCredentials.fromStream(
+                new java.io.ByteArrayInputStream(credentialsJson.getBytes())
+            );
+        } 
+        // Fallback: dùng file path (cho local development)
+        else if (credentialPath != null && !credentialPath.isBlank()) {
+            String absPath = Paths.get(credentialPath).toAbsolutePath().toString();
+            credentials = GoogleCredentials.fromStream(new FileInputStream(absPath));
+        } 
+        else {
+            throw new IllegalStateException(
+                "Google Cloud credentials not configured. " +
+                "Set either 'google.cloud.credentials-json' or 'google.cloud.credential-path'"
+            );
+        }
+        
         storage = StorageOptions.newBuilder()
                 .setCredentials(credentials)
                 .build()
@@ -50,7 +76,6 @@ public class GoogleCloudStorageService implements IGoogleCloudStorageService {
         return uploadedUrls;
     }
 
-    // 📤 Upload 1 file duy nhất (file chính)
     public String uploadSingleFile(MultipartFile file, String folderName) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Invalid file");

@@ -42,6 +42,7 @@ google:
     enabled: ${GOOGLE_CLOUD_ENABLED:true}
     bucket-name: ${GOOGLE_BUCKET_NAME:cloudstorage-04}
     credential-path: ${GOOGLE_CREDENTIAL_PATH:./gg_cloud_storage4.json}
+    credentials-json: ${GOOGLE_CLOUD_CREDENTIALS_JSON:}
 
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}

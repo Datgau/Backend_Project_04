@@ -19,12 +19,10 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Người nhận thông báo
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Người gây ra thông báo (like, comment, follow...)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "actor_id")
     private User actor;
@@ -36,7 +34,6 @@ public class Notification {
     @Column(columnDefinition = "VARCHAR(500)")
     private String content;
 
-    // ID của đối tượng liên quan (post_id, comment_id...)
     private Long relatedId;
 
     @Column(nullable = false)

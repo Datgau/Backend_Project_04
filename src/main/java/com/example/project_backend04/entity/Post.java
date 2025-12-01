@@ -30,7 +30,6 @@ public class Post {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    // Lưu nhiều ảnh dưới dạng JSON array hoặc comma-separated
     @Column(columnDefinition = "TEXT")
     private String images;
 

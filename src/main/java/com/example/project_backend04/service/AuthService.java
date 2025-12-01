@@ -180,6 +180,9 @@ public class AuthService implements IAuthService {
         LoginResponse loginResponse = new LoginResponse(
                 user.getUsername(),
                 user.getRole().getName(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getAvatar(),
                 jwtResponse
         );
 
@@ -288,7 +291,14 @@ public class AuthService implements IAuthService {
         jwtService.addRefreshTokenCookie(response, refreshToken);
 
         JwtResponse jwtResponse = new JwtResponse(jwtToken, jwtService.getValidDuration());
-        LoginResponse loginResponse = new LoginResponse(user.getUsername(), user.getRole().getName(), jwtResponse);
+        LoginResponse loginResponse = new LoginResponse(
+                user.getUsername(),
+                user.getRole().getName(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getAvatar(),
+                jwtResponse
+        );
 
         return new ApiResponse<>(true, "Đăng nhập OAuth thành công", loginResponse, 200);
     }

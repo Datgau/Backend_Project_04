@@ -1,4 +1,4 @@
-package com.example.project_backend04.dto.response.Auth;
+package com.example.project_backend04.dto.request.Chat;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,12 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginResponse {
+public class UserSearchResult {
     private Long id;
     private String username;
-    private String role;
-    private String email;
     private String fullName;
     private String avatar;
-    private JwtResponse token;
 }

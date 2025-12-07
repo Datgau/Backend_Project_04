@@ -2,6 +2,7 @@ package com.example.project_backend04.service;
 
 import com.example.project_backend04.dto.request.Chat.ChatMessageDto;
 import com.example.project_backend04.dto.request.Chat.ConversationDto;
+import com.example.project_backend04.dto.request.Chat.UserSearchResult;
 import com.example.project_backend04.entity.*;
 
 import com.example.project_backend04.repository.IRepository.IChatMessageRepository;
@@ -130,10 +131,21 @@ public class ChatService implements IChatService {
             cd.setGroup(room.isGroup());
             cd.setRoomName(room.getName());
 
-            // members ids
-            List<Long> memberIds = memberRepo.findByRoom(room)
-                    .stream().map(m -> m.getUser().getId()).collect(Collectors.toList());
+            // members ids and details
+            List<ChatRoomMember> roomMembers = memberRepo.findByRoom(room);
+            List<Long> memberIds = roomMembers.stream()
+                    .map(m -> m.getUser().getId())
+                    .collect(Collectors.toList());
             cd.setMemberIds(memberIds);
+            
+            // members details
+            List<UserSearchResult> members = roomMembers.stream()
+                    .map(m -> {
+                        User u = m.getUser();
+                        return new UserSearchResult(u.getId(), u.getUsername(), u.getFullName(), u.getAvatar());
+                    })
+                    .collect(Collectors.toList());
+            cd.setMembers(members);
 
             // last message
             List<ChatMessage> last = messageRepo.findTop1ByRoomOrderByCreatedAtDesc(room);
@@ -156,6 +168,28 @@ public class ChatService implements IChatService {
         });
 
         return result;
+    }
+
+    @Override
+    public List<UserSearchResult> getAllUsers(Pageable pageable) {
+        Page<User> userPage = userRepo.findAll(pageable);
+        return userPage.getContent().stream()
+                .map(u -> new UserSearchResult(u.getId(), u.getUsername(), u.getFullName(), u.getAvatar()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void markMessagesAsRead(Long roomId, Long userId) {
+        ChatRoom room = roomRepo.findById(roomId).orElseThrow();
+        User user = userRepo.findById(userId).orElseThrow();
+        
+        // Mark all unread messages in this room (sent by others) as read
+        List<ChatMessage> unreadMessages = messageRepo.findByRoomAndIsReadFalseAndSenderNot(room, user);
+        for (ChatMessage msg : unreadMessages) {
+            msg.setRead(true);
+        }
+        messageRepo.saveAll(unreadMessages);
     }
 
     private ChatMessageDto toDto(ChatMessage m) {

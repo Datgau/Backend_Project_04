@@ -1,10 +1,7 @@
 package com.example.project_backend04.controller;
 
 
-import com.example.project_backend04.dto.request.Chat.ChatMessageDto;
-import com.example.project_backend04.dto.request.Chat.ConversationDto;
-import com.example.project_backend04.dto.request.Chat.CreateRoomRequest;
-import com.example.project_backend04.dto.request.Chat.SendMessageRequest;
+import com.example.project_backend04.dto.request.Chat.*;
 import com.example.project_backend04.service.IService.IChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -50,5 +47,22 @@ public class ChatRestController {
     @GetMapping("/conversations/{userId}")
     public List<ConversationDto> listConversations(@PathVariable Long userId) {
         return chatService.listConversations(userId);
+    }
+
+    @GetMapping("/users")
+    public List<UserSearchResult> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return chatService.getAllUsers(pageable);
+    }
+
+    @PostMapping("/rooms/{roomId}/read")
+    public void markMessagesAsRead(
+            @PathVariable Long roomId,
+            @RequestParam Long userId
+    ) {
+        chatService.markMessagesAsRead(roomId, userId);
     }
 }

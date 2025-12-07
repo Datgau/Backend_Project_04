@@ -178,6 +178,7 @@ public class AuthService implements IAuthService {
         );
 
         LoginResponse loginResponse = new LoginResponse(
+                user.getId(),
                 user.getUsername(),
                 user.getRole().getName(),
                 user.getEmail(),
@@ -292,6 +293,7 @@ public class AuthService implements IAuthService {
 
         JwtResponse jwtResponse = new JwtResponse(jwtToken, jwtService.getValidDuration());
         LoginResponse loginResponse = new LoginResponse(
+                user.getId(),
                 user.getUsername(),
                 user.getRole().getName(),
                 user.getEmail(),

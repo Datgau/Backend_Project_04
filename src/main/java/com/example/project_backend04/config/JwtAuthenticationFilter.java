@@ -46,12 +46,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String jwt = authHeader.substring(7);
         final String username = jwtService.extractUsername(jwt);
+        System.out.println("Extracted username: " + username);
 
         // Chỉ set authentication nếu chưa có
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            System.out.println("Loading user details for: " + username);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (jwtService.isTokenValid(jwt, username)) {
+            boolean isValid = jwtService.isTokenValid(jwt, username);
+            System.out.println("Token valid: " + isValid);
+            
+            if (isValid) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -60,7 +65,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("✅ Authentication set successfully for: " + username);
+            } else {
+                System.out.println("❌ Token is invalid");
             }
+        } else if (username == null) {
+            System.out.println("❌ Username is null");
+        } else {
+            System.out.println("Authentication already exists");
         }
 
         filterChain.doFilter(request, response);

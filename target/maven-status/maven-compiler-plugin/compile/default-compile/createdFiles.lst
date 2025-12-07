@@ -18,6 +18,7 @@ com\example\project_backend04\entity\PendingUser.class
 com\example\project_backend04\security\JwtService.class
 com\example\project_backend04\config\WebSocketConfig.class
 com\example\project_backend04\entity\Story.class
+com\example\project_backend04\dto\request\Chat\UserSearchResult.class
 com\example\project_backend04\entity\Comment.class
 com\example\project_backend04\dto\request\Auth\RefreshTokenRequest.class
 com\example\project_backend04\service\PostService.class

@@ -2,6 +2,7 @@ package com.example.project_backend04.service.IService;
 
 import com.example.project_backend04.dto.request.Chat.ChatMessageDto;
 import com.example.project_backend04.dto.request.Chat.ConversationDto;
+import com.example.project_backend04.dto.request.Chat.UserSearchResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -24,4 +25,10 @@ public interface IChatService {
 
     // Fetch conversations for a user (like messenger)
     List<ConversationDto> listConversations(Long userId);
+
+    // Get all users with pagination
+    List<UserSearchResult> getAllUsers(Pageable pageable);
+
+    // Mark messages as read
+    void markMessagesAsRead(Long roomId, Long userId);
 }

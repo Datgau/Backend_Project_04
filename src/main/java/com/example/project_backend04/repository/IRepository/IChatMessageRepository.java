@@ -15,4 +15,6 @@ public interface IChatMessageRepository extends JpaRepository<ChatMessage, Long>
     List<ChatMessage> findTop1ByRoomOrderByCreatedAtDesc(ChatRoom room);
 
     long countByRoomAndIsReadFalseAndSenderNot(ChatRoom room, User sender);
+
+    List<ChatMessage> findByRoomAndIsReadFalseAndSenderNot(ChatRoom room, User sender);
 }

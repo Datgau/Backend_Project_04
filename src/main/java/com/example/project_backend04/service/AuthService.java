@@ -9,8 +9,8 @@ import com.example.project_backend04.dto.request.Auth.LoginRequest;
 import com.example.project_backend04.dto.request.Auth.RegisterRequest;
 import com.example.project_backend04.dto.response.Shared.ApiResponse;
 import com.example.project_backend04.entity.UserProvider;
-import com.example.project_backend04.repository.IRepository.IAuthRepository;
-import com.example.project_backend04.repository.IRepository.IPendingUserRepository;
+import com.example.project_backend04.repository.AuthRepository;
+import com.example.project_backend04.repository.PendingUserRepository;
 import com.example.project_backend04.repository.UserProviderRepository;
 import com.example.project_backend04.security.JwtService;
 import com.example.project_backend04.service.IService.IAuthService;
@@ -34,8 +34,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService implements IAuthService {
 
-    private final IAuthRepository authRepository;
-    private final IPendingUserRepository pendingUserRepository;
+    private final AuthRepository authRepository;
+    private final PendingUserRepository pendingUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;

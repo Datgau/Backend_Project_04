@@ -1,4 +1,4 @@
-package com.example.project_backend04.repository.IRepository;
+package com.example.project_backend04.repository;
 
 import com.example.project_backend04.entity.ChatRoom;
 import com.example.project_backend04.entity.ChatRoomMember;
@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface IChatRoomMemberRepository extends JpaRepository<ChatRoomMember, ChatRoomMemberId> {
+public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, ChatRoomMemberId> {
     Optional<ChatRoomMember> findByRoomAndUser(ChatRoom room, User user);
 
     List<ChatRoomMember> findByUser(User user);

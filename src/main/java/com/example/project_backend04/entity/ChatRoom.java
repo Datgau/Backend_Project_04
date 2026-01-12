@@ -15,10 +15,8 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Tên phòng (để trống nếu là chat 1-1)
     private String name;
 
-    // true = nhóm, false = chat 1-1
     private boolean isGroup;
 
     private LocalDateTime createdAt;

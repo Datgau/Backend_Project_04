@@ -18,12 +18,10 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Thuộc phòng nào
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
     private ChatRoom room;
 
-    // Người gửi
     @ManyToOne
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;

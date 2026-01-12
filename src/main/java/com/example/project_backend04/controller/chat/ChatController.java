@@ -5,9 +5,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 
 public class ChatController {
-    @MessageMapping("/chat")  // Client gửi lên /app/chat
-    @SendTo("/topic/messages") // Server phát ra /topic/messages
+    @MessageMapping("/chat")
+    @SendTo("/topic/messages")
     public ChatMessage send(ChatMessage message) {
-        return message; // gửi lại cho tất cả client
+        return message;
     }
 }

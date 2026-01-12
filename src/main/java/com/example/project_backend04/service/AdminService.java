@@ -6,8 +6,8 @@ import com.example.project_backend04.dto.request.User.UpdateUserRequest;
 import com.example.project_backend04.dto.response.Shared.ApiResponse;
 import com.example.project_backend04.dto.response.User.UserResponse;
 import com.example.project_backend04.mapper.UserMapper;
-import com.example.project_backend04.repository.IRepository.IRoleRepository;
-import com.example.project_backend04.repository.IRepository.IUserRepository;
+import com.example.project_backend04.repository.RoleRepository;
+import com.example.project_backend04.repository.UserRepository;
 import com.example.project_backend04.entity.Role;
 import com.example.project_backend04.entity.User;
 import com.example.project_backend04.service.IService.IAdminService;
@@ -23,8 +23,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AdminService implements IAdminService {
 
-    private final IUserRepository userRepository;
-    private final IRoleRepository roleRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 

@@ -1,4 +1,4 @@
-package com.example.project_backend04.repository.IRepository;
+package com.example.project_backend04.repository;
 
 import com.example.project_backend04.entity.Role;
 import com.example.project_backend04.entity.User;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface IAuthRepository extends JpaRepository<User, Long> {
+public interface AuthRepository extends JpaRepository<User, Long> {
 
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);

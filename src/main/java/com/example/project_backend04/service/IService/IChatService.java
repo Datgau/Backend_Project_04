@@ -8,12 +8,16 @@ import org.springframework.data.domain.Pageable;
 
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IChatService {
-    // Create or get existing 1-1 room between two users
     Long getOrCreateOneToOneRoom(Long userAId, Long userBId);
 
+    // lấy danh sách để nhắn tin
+    List<UserSearchResult> getChatUsers(Long currentUserId);
+
     // Create group room
+    Optional<Long> findOneToOneRoom(Long userAId, Long userBId);
     Long createGroupRoom(String name, List<Long> memberIds);
 
     // Send message
@@ -25,9 +29,6 @@ public interface IChatService {
 
     // Fetch conversations for a user (like messenger)
     List<ConversationDto> listConversations(Long userId);
-
-    // Get all users with pagination
-    List<UserSearchResult> getAllUsers(Pageable pageable);
 
     // Mark messages as read
     void markMessagesAsRead(Long roomId, Long userId);

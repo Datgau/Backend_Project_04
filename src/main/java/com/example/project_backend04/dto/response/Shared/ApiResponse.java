@@ -18,4 +18,25 @@ public class ApiResponse<T> {
         this.success = success;
         this.message = message;
     }
+
+    public static <T> ApiResponse<T> success(T data) {
+        return new ApiResponse<>(true, "OK", data, 200);
+    }
+
+    public static <T> ApiResponse<T> error(String message, int status) {
+        return new ApiResponse<>(false, message, null, status);
+    }
+
+    /** Dùng khi ApiResponse<Boolean> */
+    public boolean isTrue() {
+        return Boolean.TRUE.equals(this.data);
+    }
+
+    public boolean isFalse() {
+        return !Boolean.TRUE.equals(this.data);
+    }
+
+    public T getOrDefault(T defaultValue) {
+        return data != null ? data : defaultValue;
+    }
 }

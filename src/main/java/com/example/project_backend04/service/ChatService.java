@@ -5,11 +5,9 @@ import com.example.project_backend04.dto.request.Chat.ConversationDto;
 import com.example.project_backend04.dto.request.Chat.UserSearchResult;
 import com.example.project_backend04.entity.*;
 
-import com.example.project_backend04.repository.IRepository.IChatMessageRepository;
-import com.example.project_backend04.repository.IRepository.IChatRoomMemberRepository;
-import com.example.project_backend04.repository.IRepository.IChatRoomRepository;
-import com.example.project_backend04.repository.IRepository.IUserRepository;
+import com.example.project_backend04.repository.*;
 import com.example.project_backend04.service.IService.IChatService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,19 +21,21 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ChatService implements IChatService {
 
-    @Autowired
-    private IChatRoomRepository roomRepo;
 
-    @Autowired
-    private IChatRoomMemberRepository memberRepo;
+    private final ChatRoomRepository roomRepo;
 
-    @Autowired
-    private IChatMessageRepository messageRepo;
 
-    @Autowired
-    private IUserRepository userRepo;
+    private final ChatRoomMemberRepository memberRepo;
+
+    private final ChatMessageRepository messageRepo;
+
+    private final UserRepository userRepo;
+
+    private final FollowRepository followRepository;
+
 
     @Override
     public Long getOrCreateOneToOneRoom(Long userAId, Long userBId) {
@@ -70,6 +70,24 @@ public class ChatService implements IChatService {
         memberRepo.save(m2);
 
         return room.getId();
+    }
+    @Override
+    public Optional<Long> findOneToOneRoom(Long userAId, Long userBId) {
+        List<ChatRoom> candidateRooms = roomRepo.findAll().stream()
+                .filter(r -> !r.isGroup())
+                .toList();
+
+        for (ChatRoom r : candidateRooms) {
+            Set<Long> ids = memberRepo.findByRoom(r)
+                    .stream()
+                    .map(m -> m.getUser().getId())
+                    .collect(Collectors.toSet());
+
+            if (ids.size() == 2 && ids.contains(userAId) && ids.contains(userBId)) {
+                return Optional.of(r.getId());
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -108,13 +126,17 @@ public class ChatService implements IChatService {
     @Override
     public Page<ChatMessageDto> getMessages(Long roomId, Pageable pageable) {
         ChatRoom room = roomRepo.findById(roomId).orElseThrow();
-        Page<ChatMessage> page = messageRepo.findByRoomOrderByCreatedAtDesc(room, pageable);
+        Page<ChatMessage> page =
+                messageRepo.findByRoomOrderByCreatedAtDesc(room, pageable);
 
-        List<ChatMessageDto> dtos = page.getContent().stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+        List<ChatMessageDto> dtos = new ArrayList<>(page.getContent().size());
 
-        return new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
+        for (int i = page.getContent().size() - 1; i >= 0; i--) {
+            dtos.add(toDto(page.getContent().get(i)));
+        }
+
+        return new PageImpl<>(dtos, pageable, page.getTotalElements());
+
     }
 
     @Override
@@ -137,7 +159,7 @@ public class ChatService implements IChatService {
                     .map(m -> m.getUser().getId())
                     .collect(Collectors.toList());
             cd.setMemberIds(memberIds);
-            
+
             // members details
             List<UserSearchResult> members = roomMembers.stream()
                     .map(m -> {
@@ -171,11 +193,19 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public List<UserSearchResult> getAllUsers(Pageable pageable) {
-        Page<User> userPage = userRepo.findAll(pageable);
-        return userPage.getContent().stream()
-                .map(u -> new UserSearchResult(u.getId(), u.getUsername(), u.getFullName(), u.getAvatar()))
-                .collect(Collectors.toList());
+    public List<UserSearchResult> getChatUsers(Long currentUserId) {
+
+        List<User> mutualUsers =
+                followRepository.findMutualFollowUsers(currentUserId);
+
+        return mutualUsers.stream()
+                .map(u -> new UserSearchResult(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getFullName(),
+                        u.getAvatar()
+                ))
+                .toList();
     }
 
     @Override
@@ -183,7 +213,7 @@ public class ChatService implements IChatService {
     public void markMessagesAsRead(Long roomId, Long userId) {
         ChatRoom room = roomRepo.findById(roomId).orElseThrow();
         User user = userRepo.findById(userId).orElseThrow();
-        
+
         // Mark all unread messages in this room (sent by others) as read
         List<ChatMessage> unreadMessages = messageRepo.findByRoomAndIsReadFalseAndSenderNot(room, user);
         for (ChatMessage msg : unreadMessages) {

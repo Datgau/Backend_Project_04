@@ -1,11 +1,15 @@
-package com.example.project_backend04.controller;
+package com.example.project_backend04.controller.chat;
 
 
 import com.example.project_backend04.dto.request.Chat.*;
+import com.example.project_backend04.dto.response.Shared.ApiResponse;
+import com.example.project_backend04.security.CustomUserDetails;
 import com.example.project_backend04.service.IService.IChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -50,12 +54,13 @@ public class ChatRestController {
     }
 
     @GetMapping("/users")
-    public List<UserSearchResult> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+    public ApiResponse<List<UserSearchResult>> getChatUsers(
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        Pageable pageable = PageRequest.of(page, size);
-        return chatService.getAllUsers(pageable);
+        Long userId = ((CustomUserDetails) userDetails).getId();
+        return ApiResponse.success(
+                chatService.getChatUsers(userId)
+        );
     }
 
     @PostMapping("/rooms/{roomId}/read")

@@ -2,8 +2,8 @@ package com.example.project_backend04.config;
 
 import com.example.project_backend04.entity.Role;
 import com.example.project_backend04.entity.User;
-import com.example.project_backend04.repository.IRepository.IAuthRepository;
-import com.example.project_backend04.repository.IRepository.IRoleRepository;
+import com.example.project_backend04.repository.AuthRepository;
+import com.example.project_backend04.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -14,8 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class DataInitializer {
 
-    private final IAuthRepository authRepository;
-    private final IRoleRepository roleRepository;
+    private final AuthRepository authRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Bean

@@ -11,10 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-    
-    /**
-     * Tìm tất cả posts của một user, sắp xếp theo thời gian mới nhất
-     */
+
     List<Post> findByUserOrderByCreatedAtDesc(User user);
     
     /**

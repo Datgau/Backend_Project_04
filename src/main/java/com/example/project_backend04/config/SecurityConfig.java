@@ -55,7 +55,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                    // Parse allowed origins from environment variable
                     java.util.List<String> origins = java.util.Arrays.asList(allowedOrigins.split(","));
                     corsConfig.setAllowedOrigins(origins);
                     corsConfig.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

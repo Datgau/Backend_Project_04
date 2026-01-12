@@ -1,4 +1,4 @@
-package com.example.project_backend04.controller;
+package com.example.project_backend04.controller.chat;
 
 import com.example.project_backend04.dto.request.Chat.ChatMessageDto;
 import com.example.project_backend04.dto.request.Chat.ChatWebSocketPayload;
@@ -23,15 +23,10 @@ public class ChatWebSocketController {
      */
     @MessageMapping("/chat.send")
     public void sendMessage(ChatWebSocketPayload payload) {
-        // persist
         ChatMessageDto saved = chatService.sendMessage(payload.getRoomId(), payload.getSenderId(), payload.getMessage());
 
-        // Broadcast to room topic
         String topic = "/topic/rooms/" + payload.getRoomId();
         messagingTemplate.convertAndSend(topic, saved);
 
-        // Optional: notify each user privately (user queue)
-        // You can iterate members and send to /user/{userId}/queue/messages
-        // messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/queue/messages", saved);
     }
 }

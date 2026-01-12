@@ -2,10 +2,10 @@ package com.example.project_backend04.service;
 
 import com.example.project_backend04.dto.response.Notification.NotificationDTO;
 import com.example.project_backend04.entity.*;
-import com.example.project_backend04.repository.IRepository.ILikeRepository;
-import com.example.project_backend04.repository.IRepository.INotificationRepository;
-import com.example.project_backend04.repository.IRepository.IPostRepository;
-import com.example.project_backend04.repository.IRepository.IUserRepository;
+import com.example.project_backend04.repository.LikeRepository;
+import com.example.project_backend04.repository.NotificationRepository;
+import com.example.project_backend04.repository.PostRepository;
+import com.example.project_backend04.repository.UserRepository;
 import com.example.project_backend04.service.IService.ILikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -16,10 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class LikeService implements ILikeService {
 
-    private final ILikeRepository likeRepository;
-    private final IPostRepository postRepository;
-    private final IUserRepository userRepository;
-    private final INotificationRepository notificationRepository;
+    private final LikeRepository likeRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Override
@@ -75,7 +75,6 @@ public class LikeService implements ILikeService {
 
         Notification saved = notificationRepository.save(notification);
 
-        // Gửi WebSocket notification với DTO (tránh circular reference)
         NotificationDTO dto = NotificationDTO.fromEntity(saved);
         messagingTemplate.convertAndSendToUser(
                 post.getUser().getUsername(),

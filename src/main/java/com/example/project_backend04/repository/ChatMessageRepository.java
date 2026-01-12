@@ -1,4 +1,4 @@
-package com.example.project_backend04.repository.IRepository;
+package com.example.project_backend04.repository;
 
 import com.example.project_backend04.entity.ChatMessage;
 import com.example.project_backend04.entity.ChatRoom;
@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface IChatMessageRepository extends JpaRepository<ChatMessage, Long> {
+public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     Page<ChatMessage> findByRoomOrderByCreatedAtDesc(ChatRoom room, Pageable pageable);
 
     List<ChatMessage> findTop1ByRoomOrderByCreatedAtDesc(ChatRoom room);

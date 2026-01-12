@@ -2,10 +2,10 @@ package com.example.project_backend04.service;
 
 import com.example.project_backend04.dto.response.Notification.NotificationDTO;
 import com.example.project_backend04.entity.*;
-import com.example.project_backend04.repository.IRepository.ICommentRepository;
-import com.example.project_backend04.repository.IRepository.INotificationRepository;
-import com.example.project_backend04.repository.IRepository.IPostRepository;
-import com.example.project_backend04.repository.IRepository.IUserRepository;
+import com.example.project_backend04.repository.CommentRepository;
+import com.example.project_backend04.repository.NotificationRepository;
+import com.example.project_backend04.repository.PostRepository;
+import com.example.project_backend04.repository.UserRepository;
 import com.example.project_backend04.service.IService.ICommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,10 +18,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentService implements ICommentService {
 
-    private final ICommentRepository commentRepository;
-    private final IPostRepository postRepository;
-    private final IUserRepository userRepository;
-    private final INotificationRepository notificationRepository;
+    private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Override
